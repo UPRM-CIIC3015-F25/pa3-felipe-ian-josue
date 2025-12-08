@@ -846,4 +846,64 @@ class GameState(State):
     #   recursion finishes, reset card selections, clear any display text or tracking lists, and
     #   update the visual layout of the player's hand.
     def discardCards(self, removeFromHand: bool):
-        self.updateCards(400, 520, self.cards, self.hand, scale=1.2)
+
+        #Base case
+        if len(self.cardsSelectedList) == 0:
+            
+            #Add cards
+            def add_cards(cards_to_add):
+                if not cards_to_add:
+                    return
+                #Take one card from the list and add it to the hand
+                self.hand.append(cards_to_add.pop(0))
+                add_cards(cards_to_add)
+            
+            #Reset visuals
+            def reset_visuals(index=0):
+                if index >= len(self.hand):
+                    return
+                self.hand[index].isSelected = False
+                reset_visuals(index + 1)
+
+
+            #Draw cards to refill hand to 8
+            cards_needed = 8 - len(self.hand)
+            if cards_needed > 0:
+                if hasattr(State, 'deckManager'):
+                    #Ensure we are drawing for the correct level
+                    current_level = self.playerInfo.levelManager.curSubLevel
+
+                    #Deal the cards
+                    new_cards = State.deckManager.dealCards(self.deck, cards_needed, current_level)
+
+                    #Recursively add cards to hand
+                    add_cards(new_cards)
+            
+            #Reset selections and update visuals
+            self.cardsSelectedList.clear()
+            self.cardsSelectedRect.clear()
+            reset_visuals()
+
+            self.scoreBreakdownTextSurface = None
+            if hasattr(self, 'playedHandTextSurface'):
+                self.playedHandNameList = [""]
+            
+            self.updateCards(400, 520, self.cards, self.hand, scale=1.2)
+            return
+        
+        #Recursive
+        card = self.cardsSelectedList[0]
+
+        card.isSelected = False
+
+        if removeFromHand:
+            if card in self.hand:
+                self.hand.remove(card)
+                
+                if hasattr(self, 'used'):
+                    self.used.append(card)
+                
+
+        self.cardsSelectedList.pop(0)
+        self.discardCards(removeFromHand)
+
