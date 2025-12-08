@@ -560,9 +560,9 @@ class GameState(State):
             for j in range(i + 1, len(self.hand)):
                 swap_needed = False
 
-                if sort_by == "rank": #If sorting by rank (2,3,4...J,Q,K,A)
+                if sort_by == "rank": #If sorting by rank (A,K,Q...3,2 BLA BLA)
                     #iF FIRST card has higher rank value than second card, swap them
-                    if self.hand[i].rank.value > self.hand[j].rank.value:
+                    if self.hand[i].rank.value < self.hand[j].rank.value:
                         swap_needed = True
 
                     #If both cards have same rank value, compare suit order
@@ -577,7 +577,7 @@ class GameState(State):
 
                     #Same logic as above, but inverted for suit first
                     elif suitOrder.index(self.hand[i].suit) == suitOrder.index(self.hand[j].suit):
-                        if self.hand[i].rank.value > self.hand[j].rank.value:
+                        if self.hand[i].rank.value < self.hand[j].rank.value:
                             swap_needed = True
 
                 #Ultimately swap the cards if needed
