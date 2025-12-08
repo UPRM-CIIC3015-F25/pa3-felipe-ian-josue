@@ -161,6 +161,7 @@ class DeckManager:
                     card = Card(suit=suit, rank=rank, image=image)
                     deck.append(card)
 
+        return deck
 
 
     # TODO (TASK 5.1): Complete the priceMap variable by assigning each joker a price.
