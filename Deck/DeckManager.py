@@ -146,7 +146,23 @@ class DeckManager:
     def createDeck(self, subLevel: SubLevel = None):
         cardImages = self.load_card_images(subLevel)
         deck = []
+
+        #Loop through all suits and ranks to create the full deck
+        for suit in [Suit.HEARTS, Suit.CLUBS, Suit.DIAMONDS, Suit.SPADES]:
+            for rank in [
+                Rank.TWO, Rank.THREE, Rank.FOUR, Rank.FIVE, Rank.SIX,
+                Rank.SEVEN, Rank.EIGHT, Rank.NINE, Rank.TEN,
+                Rank.JACK, Rank.QUEEN, Rank.KING, Rank.ACE
+            ]:
+                #Retrieve the corresponding image
+                image = cardImages.get((suit, rank))
+                #Create Card object if image exists
+                if image is not None:
+                    card = Card(suit=suit, rank=rank, image=image)
+                    deck.append(card)
+
         return deck
+
 
     # TODO (TASK 5.1): Complete the priceMap variable by assigning each joker a price.
     #   The key should represent the joker's name, and the value should be the joker's price.
