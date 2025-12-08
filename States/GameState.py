@@ -554,7 +554,36 @@ class GameState(State):
     #   with the ones after it. Depending on the mode, sort by rank first or suit first, swapping cards when needed
     #   until the entire hand is ordered correctly.
     def SortCards(self, sort_by: str = "suit"):
-        suitOrder = [Suit.HEARTS, Suit.CLUBS, Suit.DIAMONDS, Suit.SPADES]         # Define the order of suits
+        suitOrder = [Suit.HEARTS, Suit.CLUBS, Suit.DIAMONDS, Suit.SPADES]         
+
+        for i in range(len(self.hand)):
+            for j in range(i + 1, len(self.hand)):
+                swap_needed = False
+
+                if sort_by == "rank": #If sorting by rank (2,3,4...J,Q,K,A)
+                    #iF FIRST card has higher rank value than second card, swap them
+                    if self.hand[i].rank.value > self.hand[j].rank.value:
+                        swap_needed = True
+
+                    #If both cards have same rank value, compare suit order
+                    elif self.hand[i].rank.value == self.hand[j].rank.value:
+                        if suitOrder.index(self.hand[i].suit) > suitOrder.index(self.hand[j].suit):
+                            swap_needed = True
+                
+                #If sorting by suit (which is: Hearts, Clubs, Diamonds, Spades)
+                elif sort_by == "suit":
+                    if suitOrder.index(self.hand[i].suit) > suitOrder.index(self.hand[j].suit):
+                        swap_needed = True
+
+                    #Same logic as above, but inverted for suit first
+                    elif suitOrder.index(self.hand[i].suit) == suitOrder.index(self.hand[j].suit):
+                        if self.hand[i].rank.value > self.hand[j].rank.value:
+                            swap_needed = True
+
+                #Ultimately swap the cards if needed
+                if swap_needed:
+                    self.hand[i], self.hand[j] = self.hand[j], self.hand[i]
+
         self.updateCards(400, 520, self.cards, self.hand, scale=1.2)
 
     def checkHoverCards(self):
