@@ -97,6 +97,29 @@ class ShopState(State):
     #   Each key should be the name of a hand (e.g., "Two Pair", "Straight"), and each value should be a dictionary
     #   containing its "chips", "multiplier", and "level" fields.
     #   Remember: the Sun upgrades all hands, while other planets upgrade only their specific one.
+    def apply_planet_effect(self, planet: PlanetCard):
+
+        bonus_chips = planet.chips
+        bonus_mult = planet.multiplier
+
+
+        if planet.name == "Sun":
+            for hand_name, stats in HAND_SCORES.items():
+                stats["chips"] += bonus_chips
+                stats["multiplier"] += bonus_mult
+                stats["level"] += 1
+            return
+
+        desc = planet.description
+        target_hand = desc.replace("levels up", "").strip()
+
+        for hand_name, stats in HAND_SCORES.items():
+            if hand_name == target_hand:
+                stats["chips"] += bonus_chips
+                stats["multiplier"] += bonus_mult
+                stats["level"] += 1
+                break
+
     def activatePlanet(self, planet):
         keys = HAND_SCORES.keys()
 

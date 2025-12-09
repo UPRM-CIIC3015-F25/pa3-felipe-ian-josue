@@ -535,7 +535,50 @@ class GameState(State):
     #     - A clear base case to stop recursion when all parts are done
     #   Avoid any for/while loops — recursion alone must handle the repetition.
     def calculate_gold_reward(self, playerInfo, stage=0):
+        cur_level = playerInfo.levelManager.curSubLevel
+        if cur_level is None:
             return 0
+
+        blind_type = getattr(cur_level, "blindType", "SMALL")
+        target = getattr(cur_level, "score", 0)
+        score = getattr(playerInfo, "roundScore", 0)
+
+        if stage == 0:
+            if blind_type == "SMALL":
+                base = 4
+            elif blind_type == "BIG":
+                base = 8
+            elif blind_type == "BOSS":
+                base = 10
+            else:
+                base = 0
+
+            if target <= 0:
+                return base
+
+            excess = max(0, score - target)
+            if excess <= 0:
+                return base
+
+            bonus = self.calculate_gold_reward(playerInfo, stage=1)
+            return base + bonus
+
+        if stage > 5:
+            return 0
+
+        if target <= 0:
+            return 0
+
+        excess = max(0, score - target)
+        if excess <= 0:
+            return 0
+
+        threshold = target / 5.0
+
+        if excess < stage * threshold:
+            return 0
+
+        return 1 + self.calculate_gold_reward(playerInfo, stage + 1)
 
     def updateCards(self, posX, posY, cardsDict, cardsList, scale=1.5, spacing=90, baseYOffset=-20, leftShift=40):
         cardsDict.clear()
@@ -809,8 +852,64 @@ class GameState(State):
         #       # Apply that Joker’s effect
         #       self.activated_jokers.add("joker card name")
         #   The last line ensures the Joker is visibly active and its effects are properly applied.
+        self.activated_jokers
+
+        if "The Joker" in owned:
+            self.hand_mult += 4
+            self.activated_jokers.add("The Joker")
+
+        if "Micheal Myers" in owned:
+            added_mult = random.randint(0, 23)
+            self.hand_mult += added_mult
+            self.activated_jokers.add("Micheal Myers")
+
+        if "Fibonacci" in owned:
+            fib_ranks = {"A", "2", "3", "5", "8"}
+            count_fib_cards = sum(1 for card in hand_cards if card.rank in fib_ranks)
+            if count_fib_cards > 0:
+                self.hand_mult += 8 * count_fib_cards
+                self.activated_jokers.add("Fibonacci")
+
+        if "Gauntlet" in owned:
+            self.hand_chips += 250
+            self.hand_size = max(0, self.hand_size - 2)
+            self.activated_jokers.add("Gauntlet")
+
+        if "Ogre" in owned:
+            added_mult = 3 * num_owned_jokers
+            self.hand_mult += added_mult
+            self.activated_jokers.add("Ogre")
+
+        if "Straw Hat" in owned:
+            bonus = 100 - 5 * self.handsPlayedThisRound
+            if bonus > 0:
+                self.hand_chips += bonus
+            self.activated_jokers.add("Straw Hat")
+
+        if "Hog Rider" in owned:
+            if is_straight:
+                self.hand_chips += 100
+            self.activated_jokers.add("Hog Rider")
+
+        if "? Block" in owned:
+            if len(hand_cards) == 4:
+                self.hand_chips += 4
+            self.activated_jokers.add("? Block")
+
+        if "Hogwarts" in owned:
+            aces_played = sum(1 for card in hand_cards if card.rank == "A")
+            if aces_played > 0:
+                self.hand_mult += 4 * aces_played
+                self.hand_chips += 20 * aces_played
+            self.activated_jokers.add("Hogwarts")
+
+        if "802" in owned:
+            if self.amountOfHands == 0:
+                self.hand_chips *= 2
+            self.activated_jokers.add("802")
 
         procrastinate = False
+
 
         # commit modified player multiplier and chips
         self.playerInfo.playerMultiplier = hand_mult
